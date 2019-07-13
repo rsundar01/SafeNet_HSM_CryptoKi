@@ -58,12 +58,12 @@ public class KeyPairGeneratorBIP32Demo
             /**
              * Sign/Verify operations like Encrypt/Decrypt operations can be performed in either singlepart or multipart
              * steps. Single part Signing and Verify examples are given in this code. Multipart signatures use the
-             * Signature.update() method to load all the bytes and then invoke the Signature.sign() method to get the
+             * Signature.update() method to load all the bytes and then invoke the Signature.signUsingI2p() method to get the
              * result. For more information please see the class documentation for the java.security.Signature class
              * with respect to the version of the JDK you are using.
              */
 
-            // Create a Signature Object and sign the encrypted text
+            // Create a Signature Object and signUsingI2p the encrypted text
 
             System.out.println( "Signing encrypted text" );
             sig = Signature.getInstance( "ECDSA", provider );

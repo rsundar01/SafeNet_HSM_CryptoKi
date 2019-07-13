@@ -33,7 +33,7 @@ import com.safenetinc.luna.provider.LunaCertificateX509;
 
 /**
  * This example illustrates how to generate EDDSA key pairs The pair will then be used to generate a
- * self-signed certificate and to sign/verify some data.
+ * self-signed certificate and to signUsingI2p/verify some data.
  */
 public class SignatureEDDSAphDemo {
 
@@ -108,7 +108,7 @@ public class SignatureEDDSAphDemo {
             /* Sign/Verify operations like Encrypt/Decrypt operations can be performed in either
              * singlepart or multipart steps. Single part Signing and Verify examples are given in this
              * code. Multipart signatures use the Signature.update() method to load all the bytes and then
-             * invoke the Signature.sign() method to get the result. For more information please see the
+             * invoke the Signature.signUsingI2p() method to get the result. For more information please see the
              * class documentation for the java.security.Signature class with respect to the version of
              * the JDK you are using. */
             System.out.println("Signing encrypted text");
@@ -118,7 +118,7 @@ public class SignatureEDDSAphDemo {
             // This selects the use of EDDSAph rather than PureEDDSA.
             sig.setParameter(new LunaEDDSAParameterSpec(true));
 
-            // Finally, sign the encrypted text/
+            // Finally, signUsingI2p the encrypted text/
             sig.initSign(keyPair.getPrivate());
             sig.update(bytes);
             signatureBytes = sig.sign();

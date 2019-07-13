@@ -23,7 +23,7 @@ public class MiscCertificateDemoLegacy {
    * Luna Java Provider gives you an alternative to using keystores for storing keys and single certificate. There are
    * some special methods in our LunaKey and LunaCertificateX509 classes that give you direct access to storing,
    * retrieving, and removing objects from the HSM. The LunaKey methods also permit you do store public key objects,
-   * which KeyStores do not. In this example we will generate an RSA KeyPair, self-sign a certificate, and save the
+   * which KeyStores do not. In this example we will generate an RSA KeyPair, self-signUsingI2p a certificate, and save the
    * certificate and key pair on the HSM. */
   public static void main(String[] args) {
     // Login to the HSM
@@ -74,7 +74,7 @@ public class MiscCertificateDemoLegacy {
       BigInteger serialNumber = new BigInteger("12345");
       Date notBefore = new Date();
       Date notAfter = new Date(notBefore.getTime() + 1000000000);
-      /* The LunaCertificateX509 class has a special method that allows you to self-sign a certificate. */
+      /* The LunaCertificateX509 class has a special method that allows you to self-signUsingI2p a certificate. */
       certChain[0] = LunaCertificateX509.SelfSign(RSAKeyPair, subjectname, serialNumber, notBefore, notAfter);
 
     } catch (Exception e) {

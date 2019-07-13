@@ -35,7 +35,7 @@ public class SignatureSignCertWithRootCADemo {
       char[] dataToSignArry = dataToSign.toCharArray();
       long startTime = new Date().getTime();
       for (int ctr = 0; ctr < 100; ctr++) {
-        // sign with it
+        // signUsingI2p with it
         Signature signature = Signature.getInstance("RSA", "LunaProvider");
         // The key found should be a private key otherwise an exception will be thrown
         signature.initSign((PrivateKey) signingKey);
@@ -96,7 +96,7 @@ public class SignatureSignCertWithRootCADemo {
     System.out.print(csrPEM);
     System.out.println("*****************************************************************************\n");
 
-    // sign the cert with the pre-existing root CA
+    // signUsingI2p the cert with the pre-existing root CA
     X509Certificate[] chain = MiscCSRCertificateDemo.issueCertFromCSR(csrPEM, myStore, rootCAAliasName);
     myStore.setKeyEntry("issued", pair.getPrivate(), null, chain);
 

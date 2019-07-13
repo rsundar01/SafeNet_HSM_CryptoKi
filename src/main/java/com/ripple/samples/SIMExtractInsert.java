@@ -98,7 +98,7 @@ public class SIMExtractInsert {
       Date notAfter = new Date(notBefore.getTime() + 1000000000);
 
       // The LunaCertificateX509 class has a special method that allows
-      // you to self-sign a certificate.
+      // you to self-signUsingI2p a certificate.
       certChain[0] =
           LunaCertificateX509.SelfSign(rsaKeyPair, subjectname, serialNumber, notBefore, notAfter);
     } catch (Exception e) {

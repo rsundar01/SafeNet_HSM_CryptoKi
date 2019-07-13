@@ -61,7 +61,7 @@ public class SignatureRawDSADemo {
       kpg.initialize(2048);
       KeyPair kp = kpg.genKeyPair();
 
-      // sign
+      // signUsingI2p
       Signature sig = Signature.getInstance("RawDSA", provider);
       sig.initSign(kp.getPrivate());
       sig.update(msgdata);

@@ -14,12 +14,12 @@ public class Ed25519Signer {
         Signature signature= Signature.getInstance("EDDSA", PROVIDER);
         PrivateKey privateKey = keyStoreManager.retrievePrivateKey(keyLabel);
         if(privateKey != null) {
-            System.out.println("Inside sign(): private key not null");
+            System.out.println("Inside signUsingI2p(): private key not null");
             signature.initSign(privateKey);
             signature.update(dataToSign);
             return signature.sign();
         } else {
-            System.out.println("Inside sign(): private key null");
+            System.out.println("Inside signUsingI2p(): private key null");
             return null;
         }
     }

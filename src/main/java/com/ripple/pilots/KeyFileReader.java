@@ -1,7 +1,7 @@
 package com.ripple.pilots;
 
-import com.safenetinc.luna.provider.key.LunaKey;
 import org.bouncycastle.crypto.AsymmetricCipherKeyPair;
+import org.bouncycastle.crypto.CipherParameters;
 import org.bouncycastle.crypto.generators.Ed25519KeyPairGenerator;
 import org.bouncycastle.crypto.params.Ed25519KeyGenerationParameters;
 import org.bouncycastle.crypto.params.Ed25519PrivateKeyParameters;
@@ -12,14 +12,11 @@ import org.bouncycastle.util.encoders.Hex;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
-import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.Scanner;
+import java.util.*;
+
 import org.bouncycastle.crypto.Signer;
-import org.bouncycastle.crypto.signers.Ed25519Signer;
 
 public class KeyFileReader {
 
@@ -27,16 +24,10 @@ public class KeyFileReader {
         try {
 
             Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
-            //KeyFactory keyFactory = KeyFactory.getInstance("EdDSAE25519", "BC");
-            //KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("EdDSA", "BC");
-            Ed25519KeyPairGenerator keyPairGenerator = new Ed25519KeyPairGenerator();
-            keyPairGenerator.init(new Ed25519KeyGenerationParameters(new SecureRandom()));
-            AsymmetricCipherKeyPair ed25519KeyPair = keyPairGenerator.generateKeyPair();
-            Ed25519PrivateKeyParameters ed25519PrivateKey = (Ed25519PrivateKeyParameters)ed25519KeyPair.getPrivate();
-            Ed25519PublicKeyParameters ed25519PublicKey = (Ed25519PublicKeyParameters)ed25519KeyPair.getPublic();
+            List<CipherParameters> l = generateEd25519KeyPair();
+            Ed25519PrivateKeyParameters ed25519PrivateKey = (Ed25519PrivateKeyParameters) l.get(0);
+            Ed25519PublicKeyParameters ed25519PublicKey = (Ed25519PublicKeyParameters) l.get(1);
             byte[] privateKeyBytes = ed25519PrivateKey.getEncoded();
-            System.out.println("Private key: " + Hex.toHexString(privateKeyBytes));
-
 
             // Sign data
             String dataToSign = "Hello World, How are you doing?";
@@ -44,7 +35,7 @@ public class KeyFileReader {
             //Signature signer = Signature.getInstance("EdDSA", "BC");
             //signer.initSign(ed25519PrivateKey);
             //signer.update(dataBytesToSign);
-            //byte[] signature = signer.sign();
+            //byte[] signature = signer.signUsingI2p();
             Signer signer = new org.bouncycastle.crypto.signers.Ed25519Signer();
             signer.init(true, ed25519PrivateKey);
             signer.update(dataBytesToSign, 0, dataBytesToSign.length);
@@ -59,18 +50,19 @@ public class KeyFileReader {
             //keyFactory = KeyFactory.getInstance("EdDSA", "LunaProvider");
 
             // Import key pair to HSM
-            ImportEd25519PrivateKey importEdKey = new ImportEd25519PrivateKey();
-            //System.out.println(Hex.toHexString(importEdKey.parseJavaPrivateKeyASN(privateKeyBytes)));
-            String ed25519KeyLabel = "test_imported_ed25519_02";
+            KeyStoreManager keyStoreManager = KeyStoreManager.getInstance();
+            keyStoreManager.keyStoreLogin();
+            //System.out.println(Hex.toHexString(importEdKey.asnEd25519PrivateKeyParserBc(privateKeyBytes)));
+            String ed25519KeyLabel = "test_imported_ed25519_03";
             boolean isImportSuccessful =
-                    importEdKey.importKey(privateKeyBytes, false,"test_rsa_importkey_01", "test_aes_wrappingkey_01",
+                    KeyFormatter.importKey(keyStoreManager, privateKeyBytes, false,
+                            "test_rsa_importkey_01", "test_aes_wrappingkey_01",
                            ed25519KeyLabel );
             /*KeyPair ed25519KeyPair = new KeyPair(ed25519PublicKey, ed25519PrivateKey);
             //keyStoreManager.importKeyPairToHSM(ed25519KeyPair, keyLabel);
             PrivateKey injectedKey = LunaKey.InjectPrivateKey(ed25519PrivateKey, 0);
             KeyStore keyStore = keyStoreManager.getKeyStore();*/
 
-            KeyStoreManager keyStoreManager = KeyStoreManager.getInstance();
             Enumeration<String> hsmObjects = keyStoreManager.listContents();
             while(hsmObjects.hasMoreElements()) {
                 System.out.println(hsmObjects.nextElement());
@@ -136,7 +128,26 @@ public class KeyFileReader {
         byte[] publicKeyBytes = readEd25519PubKeyFromFile();
         X509EncodedKeySpec x509EncodedPubKey = new X509EncodedKeySpec(publicKeyBytes);
         KeyFactory keyFactory = KeyFactory.getInstance("EdDSA", "BC");
+
         PublicKey ed25519PublicKey = keyFactory.generatePublic(x509EncodedPubKey);
         return ed25519PublicKey;
+    }
+
+    public static List<CipherParameters> generateEd25519KeyPair() {
+        //KeyFactory keyFactory = KeyFactory.getInstance("EdDSAE25519", "BC");
+        //KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("EdDSA", "BC");
+        Ed25519KeyPairGenerator keyPairGenerator = new Ed25519KeyPairGenerator();
+        keyPairGenerator.init(new Ed25519KeyGenerationParameters(new SecureRandom()));
+        AsymmetricCipherKeyPair ed25519KeyPair = keyPairGenerator.generateKeyPair();
+        Ed25519PrivateKeyParameters ed25519PrivateKey = (Ed25519PrivateKeyParameters)ed25519KeyPair.getPrivate();
+        Ed25519PublicKeyParameters ed25519PublicKey = (Ed25519PublicKeyParameters)ed25519KeyPair.getPublic();
+        byte[] privateKeyBytes = ed25519PrivateKey.getEncoded();
+        System.out.println("Private key: " + Hex.toHexString(privateKeyBytes));
+        byte[] publicKeyBytes = ed25519PublicKey.getEncoded();
+        System.out.println("Public key: " + Hex.toHexString(publicKeyBytes));
+        ArrayList<CipherParameters> l = new ArrayList<>();
+        l.add(ed25519PrivateKey);
+        l.add(ed25519PublicKey);
+        return l;
     }
 }

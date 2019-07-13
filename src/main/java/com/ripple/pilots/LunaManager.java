@@ -6,13 +6,18 @@ import com.safenetinc.luna.LunaSlotManager;
 
 public class LunaManager {
 
-    static String importedKeyLabel = "test_default_key_01";
+    static String importedKeyLabel = "test_imported_ed25519_04";
+    private static final CK_KEY_TYPE EDWARD_KEY_VALUE = new CK_KEY_TYPE(0x80000012);
+    private static final long EDDSA_MECHANISM_VALUE = 0x80000c03L;
+    private static final int SIGNATURE_LENGTH = 64;
+
+
     static CK_ATTRIBUTE[] privateTemplate =
             {
                     new CK_ATTRIBUTE(CKA.CLASS,     CKO.PRIVATE_KEY),
                     new CK_ATTRIBUTE(CKA.TOKEN,     CK_BBOOL.TRUE),
                     //No object for Edward key need to specify the long value
-                    new CK_ATTRIBUTE(CKA.KEY_TYPE,  0x80000012),
+                    new CK_ATTRIBUTE(CKA.KEY_TYPE,  EDWARD_KEY_VALUE),
                     new CK_ATTRIBUTE(CKA.SENSITIVE, CK_BBOOL.TRUE),
                     new CK_ATTRIBUTE(CKA.LABEL,    importedKeyLabel.getBytes()),
                     new CK_ATTRIBUTE(CKA.PRIVATE,   CK_BBOOL.TRUE),
@@ -47,8 +52,9 @@ public class LunaManager {
         return isInitialized;
     }
 
-    public static void importEd25519PrivateKey(byte[] wrappedKey, String aesWrappingKeyLabel, String importedKeyLabel)
+    public static boolean importEd25519PrivateKey(byte[] wrappedKey, String aesWrappingKeyLabel, String importedKeyLabel)
     {
+        boolean importSuccessful = false;
         CK_SESSION_HANDLE session = new CK_SESSION_HANDLE();
         long slotId = slot;
         try
@@ -81,12 +87,13 @@ public class LunaManager {
             CK_MECHANISM mechanism = new CK_MECHANISM(CKM.AES_CBC_PAD,"1234567812345678".getBytes());
             CK_OBJECT_HANDLE hAesUnWrapKey = new CK_OBJECT_HANDLE();
 
-            privateTemplate[4] = new CK_ATTRIBUTE(CKA.LABEL, importedKeyLabel.getBytes());
+            //privateTemplate[4] = new CK_ATTRIBUTE(CKA.LABEL, importedKeyLabel.getBytes());
             CryptokiEx.C_UnwrapKey(session, mechanism, hKey, wrappedKey, wrappedKey.length,
                     privateTemplate, privateTemplate.length, hAesUnWrapKey);
             System.out.println("Unwrap wrapped ECC Edward key with AES key: symmetric handle (" +
                     hKey.longValue() +") - Unwrapped AES handle (" +
                     hAesUnWrapKey.longValue() + ")");
+            importSuccessful = true;
 
         }
         catch (CKR_Exception ex)
@@ -122,9 +129,10 @@ public class LunaManager {
              */
             //Cryptoki.C_Finalize(null);
         }
+        return importSuccessful;
     }
 
-    static CK_OBJECT_HANDLE findKey(CK_SESSION_HANDLE session,
+    public static CK_OBJECT_HANDLE findKey(CK_SESSION_HANDLE session,
                                     CK_OBJECT_CLASS keyClass,
                                     CK_KEY_TYPE keyType,
                                     String keyName,
@@ -140,7 +148,8 @@ public class LunaManager {
         CK_ATTRIBUTE[] template =
                 {
                         new CK_ATTRIBUTE(CKA.CLASS,     keyClass),
-                        new CK_ATTRIBUTE(CKA.KEY_TYPE,  keyType),
+                        //new CK_ATTRIBUTE(CKA.KEY_TYPE,  keyType),
+                        new CK_ATTRIBUTE(CKA.KEY_TYPE, 0x80000012),
                         new CK_ATTRIBUTE(CKA.TOKEN,     CK_BBOOL.TRUE),
                         new CK_ATTRIBUTE(CKA.LABEL,     keyName.getBytes()),
                         new CK_ATTRIBUTE(CKA.PRIVATE,   new CK_BBOOL(bPrivate))
@@ -163,4 +172,48 @@ public class LunaManager {
             return new CK_OBJECT_HANDLE();
         }
     }
+
+
+    private static byte[] doSignature(CK_SESSION_HANDLE session,
+                               CK_OBJECT_HANDLE privateKey,
+                               byte[] data) {
+
+        byte[] signature = new byte[SIGNATURE_LENGTH];
+        CK_MECHANISM mechanism = new CK_MECHANISM(new CK_MECHANISM_TYPE(EDDSA_MECHANISM_VALUE));
+        CryptokiEx.C_SignInit(session, mechanism, privateKey);
+        CryptokiEx.C_SignUpdate(session, data, data.length);
+        CryptokiEx.C_SignFinal(session, signature, new LongRef(SIGNATURE_LENGTH));
+        return signature;
+    }
+
+    public static byte[] getSignature(String keyLabel, String data) {
+        CK_SESSION_HANDLE session = JcprovSessionManager.openSession();
+        if(session == null) return null;
+        CK_OBJECT_HANDLE privateKey = findKey(session, CKO.PRIVATE_KEY, EDWARD_KEY_VALUE,
+                                            keyLabel, true);
+        if(privateKey == null) return null;
+        byte[] signature = doSignature(session, privateKey, data.getBytes());
+        return signature;
+    }
+
+    private static int doverify(CK_SESSION_HANDLE session, CK_OBJECT_HANDLE publickey,
+                                    byte[] dataToVerify, byte[] signature) {
+        CK_MECHANISM mechanism = new CK_MECHANISM(new CK_MECHANISM_TYPE(EDDSA_MECHANISM_VALUE));
+        CryptokiEx.C_VerifyInit(session, mechanism, publickey);
+        CryptokiEx.C_VerifyUpdate(session, dataToVerify, dataToVerify.length);
+        CK_RV ret = CryptokiEx.C_VerifyFinal(session, signature, signature.length);
+        return ret.intValue();
+    }
+
+    public static int verifySignature(String keyLabel, String data, byte[] signature) {
+        CK_SESSION_HANDLE session = JcprovSessionManager.openSession();
+        if(session == null) return -1;
+        CK_OBJECT_HANDLE publicKey = findKey(session, CKO.PUBLIC_KEY, EDWARD_KEY_VALUE,
+                keyLabel, false);
+        if(publicKey == null) return -1;
+        int r = doverify(session, publicKey, data.getBytes(), signature);
+        return r;
+    }
+
+
 }

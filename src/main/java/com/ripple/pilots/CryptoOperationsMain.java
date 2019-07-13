@@ -76,7 +76,7 @@ public class CryptoOperationsMain {
 
             // Verify signature
             //Ed25519Verifier verifier = new Ed25519Verifier();
-            //boolean verification = verifier.verify(keyStoreManager, "test_ed25519_01", "Some data to sign".getBytes(), signature);
+            //boolean verification = verifier.verify(keyStoreManager, "test_ed25519_01", "Some data to signUsingI2p".getBytes(), signature);
 
             /*if(verification) {
                 System.out.println("Verification successful");

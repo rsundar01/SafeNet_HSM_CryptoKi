@@ -78,8 +78,8 @@ public class MiscCSRCertificateDemo {
 
   public static String generateCertificateSigningRequest(KeyPair pair, X500Principal subject) throws Exception {
     /**
-     * Build and sign the certificate signing request. The public key is included in the CSR and the private key is used
-     * to sign the CSR.
+     * Build and signUsingI2p the certificate signing request. The public key is included in the CSR and the private key is used
+     * to signUsingI2p the CSR.
      */
     ContentSigner signGen = new JcaContentSignerBuilder("SHA256withRSA").build(pair.getPrivate());
 

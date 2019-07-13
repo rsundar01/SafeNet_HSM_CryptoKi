@@ -42,7 +42,7 @@ public class MiscSIMDemo {
   public String password = "password";
   public String badPassword = "badpass";
 
-  // some text to sign
+  // some text to signUsingI2p
   byte[] document = "This document will never be trusted unless signed".getBytes();
 
   public static void main(String[] args) {
@@ -106,7 +106,7 @@ public class MiscSIMDemo {
       return false;
     }
 
-    // sign some data
+    // signUsingI2p some data
     signTest(myPair.getPublic(), privKey);
 
     // cleanup
@@ -177,7 +177,7 @@ public class MiscSIMDemo {
       System.out.println("UnSIM operation failed unexpectedly.");
     }
 
-    // sign some data
+    // signUsingI2p some data
     signTest(myPair.getPublic(), privKey);
 
     // cleanup
@@ -272,7 +272,7 @@ public class MiscSIMDemo {
       System.out.println("UnSIM operation failed unexpectedly.");
     }
 
-    // sign some data
+    // signUsingI2p some data
     signTest(myPair.getPublic(), privKey);
 
     // cleanup
@@ -385,10 +385,10 @@ public class MiscSIMDemo {
   }
 
   /**
-   * Helper method to sign/verify some data using the public and private keys given
+   * Helper method to signUsingI2p/verify some data using the public and private keys given
    */
   private boolean signTest(PublicKey pubKey, PrivateKey privKey) {
-    // sign some data
+    // signUsingI2p some data
     byte[] signature = null;
     Signature rsasig = null;
     try {

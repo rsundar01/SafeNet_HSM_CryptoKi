@@ -68,7 +68,7 @@ public class SignatureRSAAndMGF1Demo {
       data = dataSHA1;
       data = dataNoSHA;
 
-      // sign
+      // signUsingI2p
       Signature sig = null;
       sig = Signature.getInstance("SHA1withRSAandMGF1", provider);
       sig = Signature.getInstance("SHA224withRSAandMGF1", provider);

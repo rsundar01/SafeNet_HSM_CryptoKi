@@ -93,10 +93,10 @@ public class SignatureDSADemo {
     Signature ecdsaSig = null;
     byte[] signatureBytes = null;
     try {
-      // Create a Signature Object and sign the encrypted text
+      // Create a Signature Object and signUsingI2p the encrypted text
       /* Sign/Verify operations like Encrypt/Decrypt operations can be performed in either singlepart or multipart
        * steps. Single part Signing and Verify examples are given in this code. Multipart signatures use the
-       * Signature.update() method to load all the bytes and then invoke the Signature.sign() method to get the result.
+       * Signature.update() method to load all the bytes and then invoke the Signature.signUsingI2p() method to get the result.
        * For more information please see the class documentation for the java.security.Signature class with respect to
        * the version of the JDK you are using. */
       System.out.println("Signing encrypted text");
